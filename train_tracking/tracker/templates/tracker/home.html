@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Premium Train Live Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* BASE ANIMATIONS */
+        @keyframes background-pan {
+            from { background-position: 0% center; }
+            to { background-position: -200% center; }
+        }
+        .bg-animated-gradient {
+            background-size: 200% auto;
+            animation: background-pan 20s linear infinite;
+        }
+
+        /* HERO ANIMATIONS (Sparkle Effect) */
+        @keyframes track-move {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .animate-track {
+            display: inline-block;
+            background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: track-move 3s linear infinite; /* Slightly faster for more energy */
+        }
+        
+        /* STATUS CARD GLOW (Subtle Depth/Glass effect) */
+        .card-depth {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card-depth:hover {
+            transform: translateY(-2px);
+        }
+
+        /* CURRENT STATION HIGHLIGHT */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 204, 0, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(255, 204, 0, 0.9); }
+        }
+        .animated-current {
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        /* WELCOME TOAST ANIMATION */
+        @keyframes toast-slide-in {
+            0% { transform: translateY(-150%); opacity: 0; }
+            20% { transform: translateY(0); opacity: 1; }
+            80% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-150%); opacity: 0; }
+        }
+        .toast-animation {
+            animation: toast-slide-in 6s ease-in-out forwards;
+        }
+
+        /* BUTTON STYLE UPGRADE */
+        .btn-premium {
+            background: linear-gradient(90deg, #3b82f6, #4f46e5);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+        .btn-premium:hover {
+            background: linear-gradient(90deg, #4f46e5, #3b82f6);
+            transform: scale(1.03);
+            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800 flex items-center justify-center min-h-screen p-4 relative">
+    
+    <div id="welcome-toast" class="toast-animation fixed top-0 left-1/2 -translate-x-1/2 mt-6 p-4 rounded-full shadow-2xl bg-gradient-to-r from-yellow-500 to-orange-600 text-white font-extrabold z-50 transform opacity-0 tracking-wider text-lg border-2 border-white">
+        <span class="mr-3 text-2xl">✨</span> Welcome Aboard! Find your train instantly.
+    </div>
+
+    <div class="w-full max-w-6xl">
+        <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-animated-gradient rounded-3xl shadow-2xl p-12 sm:p-20 text-center text-white mb-12 overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-white transform -skew-y-2"></div>
+            
+            <h1 class="text-5xl sm:text-7xl font-black mb-3 relative z-10">
+                <span class="text-yellow-300">⚡</span> 
+                <span class="animate-track">TRAIN LIVE STATUS</span>
+            </h1>
+            
+            <p class="text-xl sm:text-3xl font-light opacity-90 mt-6 relative z-10">
+                Your journey, tracked in real time.
+            </p>
+        </div>
+
+        <div class="space-y-8">
+            <div class="bg-white rounded-2xl card-depth p-8 sm:p-12 border-t-8 border-blue-500">
+                <form method="POST" class="flex flex-col lg:flex-row items-center justify-center gap-6">
+                    {% csrf_token %}
+                    <input type="text" name="train_no" placeholder="Enter 5-digit Train Number..." required class="w-full lg:flex-1 px-6 py-4 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-300 text-xl font-medium placeholder-gray-400">
+                    <button type="submit" class="w-full lg:w-auto px-12 py-4 text-white font-extrabold rounded-xl btn-premium text-xl uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2">
+                        Get Live Status
+                    </button>
+                </form>
+                {% if error_message %}
+                    <p class="text-center text-red-600 font-semibold mt-6 bg-red-50 p-3 rounded-lg border border-red-200">{{ error_message }}</p>
+                {% endif %}
+            </div>
+
+            {% if train_data %}
+                <div class="bg-white rounded-2xl card-depth p-8 sm:p-12 border-t-8 border-green-500">
+                    <h2 class="text-3xl sm:text-4xl font-black text-gray-700 text-center mb-10 pb-4 border-b-4 border-dashed border-gray-200">
+                        <span class="text-green-500">●</span> Status of Train <span class="text-blue-600">{{ train_data.train_no }}</span>
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-inner">
+                            <p class="text-md font-semibold text-blue-600 uppercase tracking-widest mb-2">Current Location</p>
+                            <p class="text-3xl sm:text-5xl font-extrabold text-gray-900 mt-2">{{ train_data.current_station }}</p>
+                        </div>
+                        
+                        <div class="md:col-span-2 p-6 bg-green-50 rounded-xl border border-green-200 shadow-inner flex items-center justify-center">
+                            <div>
+                                <p class="text-md font-semibold text-green-600 uppercase tracking-widest mb-2">Detailed Status</p>
+                                <p class="text-xl sm:text-3xl font-medium text-gray-800">{{ train_data.train_status_message|safe }}</p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 bg-gray-100 rounded-xl border border-gray-200 shadow-inner">
+                            <p class="text-md font-semibold text-gray-600 uppercase tracking-widest mb-2">Journey Terminated</p>
+                            <p class="text-3xl sm:text-5xl font-extrabold text-gray-900 mt-2">{{ train_data.terminated }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl card-depth p-8 sm:p-12 border-t-8 border-indigo-500">
+                    <h2 class="text-3xl sm:text-4xl font-black text-gray-700 text-center mb-10 pb-4 border-b-4 border-dashed border-gray-200">
+                        Detailed Route Schedule
+                    </h2>
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
+                        <table class="min-w-full text-sm sm:text-base border-collapse">
+                            <thead>
+                                <tr class="bg-indigo-600 text-white text-left uppercase text-xs sm:text-sm tracking-wider">
+                                    <th class="p-4 font-bold">#</th>
+                                    <th class="p-4 font-bold">Code</th>
+                                    <th class="p-4 font-bold">Station Name</th>
+                                    <th class="p-4 font-bold">Sch. Arr</th>
+                                    <th class="p-4 font-bold">Sch. Dep</th>
+                                    <th class="p-4 font-bold">Distance (KM)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for station in stations %}
+                                <tr class="border-b border-gray-100 last:border-0 hover:bg-indigo-50 transition-colors duration-200 
+                                    {% if station.stationCode == train_data.current_station %}
+                                        bg-yellow-200 animated-current font-extrabold text-gray-900
+                                    {% endif %}
+                                ">
+                                    <td class="p-4 text-center">{{ station.stnSerialNumber }}</td>
+                                    <td class="p-4 font-black text-blue-600">{{ station.stationCode }}</td>
+                                    <td class="p-4 whitespace-nowrap">{{ station.stationName }}</td>
+                                    <td class="p-4">{{ station.arrivalTime }}</td>
+                                    <td class="p-4">{{ station.departureTime }}</td>
+                                    <td class="p-4">{{ station.distance }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-16 text-gray-500 text-sm">
+            <p>&copy; 2025 Premium Train Tracker | Data provided for demonstration purposes only.</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toast = document.getElementById('welcome-toast');
+            // Remove the element from the DOM after the animation completes (6s)
+            setTimeout(() => {
+                if (toast) {
+                    toast.remove();
+                }
+            }, 6000); 
+        });
+    </script>
+</body>
+</html>
+
+{% comment %} main code  {% endcomment %}
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚂 Train Live Status Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations for a more lively feel */
+        @keyframes background-pan {
+            from { background-position: 0% center; }
+            to { background-position: -200% center; }
+        }
+
+        @keyframes move-train {
+            0% { transform: translateX(-150%); }
+            100% { transform: translateX(200%); }
+        }
+
+        .bg-animated-gradient {
+            background-size: 200% auto;
+            animation: background-pan 15s linear infinite;
+        }
+        
+        .animate-move-train {
+            animation: move-train 10s linear infinite;
+        }
+
+        /* Highlight for the current station */
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(255, 204, 0, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(255, 204, 0, 1);
+            }
+        }
+        .animated-current {
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+
+        /* Subtle glow on button hover */
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800 flex items-center justify-center min-h-screen">
+    <div class="relative w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+        <!-- Hero Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-animated-gradient rounded-3xl shadow-2xl p-8 sm:p-12 text-center text-white mb-8 sm:mb-12">
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-2 relative">
+                <span class="absolute left-0 right-0 top-1/2 -translate-y-1/2 text-2xl animate-move-train">🚂</span>
+                Train Live Status Tracker
+            </h1>
+            <p class="text-lg sm:text-xl font-medium opacity-90 mt-6">
+                Welcome! Enter a train number to get started.
+            </p>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="space-y-6">
+            <!-- Form Card -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-t-8 border-blue-500">
+                <form method="POST" class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    {% csrf_token %}
+                    <input type="text" name="train_no" placeholder="Train Number" required class="w-full sm:w-80 px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all duration-300 text-lg">
+                    <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:ring-offset-2 btn-glow">
+                        Check Status
+                    </button>
+                </form>
+                {% if error_message %}
+                    <p class="text-center text-red-500 font-semibold mt-4">{{ error_message }}</p>
+                {% endif %}
+            </div>
+
+            {% if train_data %}
+                <!-- Live Status Card -->
+                <div class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-t-8 border-green-500">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-700 text-center mb-6 border-b pb-4 border-gray-200">Live Status</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-semibold text-gray-500">Current Station</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{{ train_data.current_station }}</p>
+                        </div>
+                        <div class="col-span-1 md:col-span-2 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-semibold text-gray-500">Status Message</p>
+                            <p class="text-lg sm:text-xl text-gray-900 mt-1">{{ train_data.train_status_message|safe }}</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-semibold text-gray-500">Terminated</p>
+                            <p class="text-lg sm:text-xl font-bold text-gray-900 mt-1">{{ train_data.terminated }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Stations Card -->
+                <div class="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-t-8 border-blue-500">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-700 text-center mb-6 border-b pb-4 border-gray-200">Route Stations</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm sm:text-base border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-left text-gray-600 uppercase">
+                                    <th class="p-4 rounded-tl-lg">#</th>
+                                    <th class="p-4">Station Code</th>
+                                    <th class="p-4">Station Name</th>
+                                    <th class="p-4">Arrival</th>
+                                    <th class="p-4">Departure</th>
+                                    <th class="p-4 rounded-tr-lg">Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for station in stations %}
+                                <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors duration-200 {% if station.stationCode == train_data.current_station %}bg-yellow-100 animated-current{% endif %}">
+                                    <td class="p-4">{{ station.stnSerialNumber }}</td>
+                                    <td class="p-4 font-medium">{{ station.stationCode }}</td>
+                                    <td class="p-4">{{ station.stationName }}</td>
+                                    <td class="p-4">{{ station.arrivalTime }}</td>
+                                    <td class="p-4">{{ station.departureTime }}</td>
+                                    <td class="p-4">{{ station.distance }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+
+ {% endcomment %}
+
+
+{% comment %} <!DOCTYPE html>
+<html>
+<head>
+    <title>Train Live Status</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+        th { background: #ddd; }
+        .current { background-color: yellow; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🚂 Train Live Status Tracker</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="train_no" placeholder="Train Number" required>
+        <button type="submit">Check Status</button>
+    </form>
+
+    {% if error_message %}
+        <p style="color:red">{{ error_message }}</p>
+    {% endif %}
+
+    {% if train_data %}
+        <h2>Current Station: {{ train_data.current_station }}</h2>
+        <p>Status Message: {{ train_data.train_status_message|safe }}</p>
+        <p>Terminated: {{ train_data.terminated }}</p>
+
+        <h3>Route Stations</h3>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Station Code</th>
+                <th>Station Name</th>
+                <th>Arrival</th>
+                <th>Departure</th>
+                <th>Distance</th>
+            </tr>
+            {% for station in stations %}
+            <tr class="{% if station.stationCode == train_data.current_station %}current{% endif %}">
+                <td>{{ station.stnSerialNumber }}</td>
+                <td>{{ station.stationCode }}</td>
+                <td>{{ station.stationName }}</td>
+                <td>{{ station.arrivalTime }}</td>
+                <td>{{ station.departureTime }}</td>
+                <td>{{ station.distance }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html> {% endcomment %}
