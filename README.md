@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="images/img1.png" alt="Screenshot 1" width="250" style="margin: 5px;"/>
-  <img src="images/img2.png" alt="Screenshot 2" width="250" style="margin: 5px;"/>
-  <img src="images/img3.png" alt="Screenshot 3" width="250" style="margin: 5px;"/>
+  <img src="project image/Screenshot 2025-12-29 212636.png" alt="Screenshot" width="500"/>
+  <img src="project image/Screenshot 2025-12-29 212646.png" alt="Screenshot" width="500"/>
+  <img src="project image/Screenshot 2025-12-29 212735.png" alt="Screenshot" width="500"/>
 </p>
